@@ -101,10 +101,27 @@ land_temps <- left_join(tl_global,tl_africa, by = 'date') %>%
 
 remove(tl_africa, tl_NA, tl_SA, tl_oceania, tl_asia, tl_europe, tl_global)
 
-# Greenhouse gasses emissions data of countries (1750-2019) in tonnes ####
+# Greenhouse gas emissions data of countries (1750-2017) in tonnes ####
 # https://www.kaggle.com/datasets/srikantsahu/co2-and-ghg-emission-data
 
-ghg <- read.csv("./data/emission data.csv", sep = ",") %>% 
-    mutate(total_emissions = rowSums(across(where(is.numeric)), na.rm=TRUE))
+# make this dataset be the backup
+
+# ghg <- read.csv("./data/emission_data.csv", sep = ",") %>% 
+#     mutate(total_emissions = rowSums(across(where(is.numeric)), na.rm=TRUE))
+# head(ghg)
+
+# Greenhouse gas emissions data of countries (1990-2019) in tonnes ####
+# https://ourworldindata.org/greenhouse-gas-emissions
+
+# Total greenhouse gas emissions by country
+ghg_countries <- read.csv("./data/ghg_emissions_countries.csv", sep = ",") %>% 
+    select(-Code) %>% 
+    rename(GHG_emissions = Total.including.LUCF) %>% 
+    pivot_wider(names_from = Entity, values_from = GHG_emissions)
+
+# Total greenhouse gas emissions by industry
+ghg_sectors <- read.csv("./data/ghg_emissions_sectors.csv", sep = ",") %>% 
+    filter(Entity == "World")
+
 
 
