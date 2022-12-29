@@ -123,5 +123,8 @@ ghg_countries <- read.csv("./data/ghg_emissions_countries.csv", sep = ",") %>%
 ghg_sectors <- read.csv("./data/ghg_emissions_sectors.csv", sep = ",") %>% 
     filter(Entity == "World")
 
+# Biggest CO2 celectrity polluters ####
+# https://weareyard.com/insights/worst-celebrity-private-jet-co2-emission-offenders
+
 
 
