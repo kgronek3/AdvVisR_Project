@@ -2,7 +2,7 @@
 library(tidyverse)
 library(openxlsx)
 
-# Sea ice extent Dataset
+# Sea ice extent Dataset ####
 # https://nsidc.org/data/geophysical-measurements
 # https://nsidc.org/data/g02135/versions/3
 
@@ -41,7 +41,7 @@ ice_melt <- read.xlsx("./data/greenland-daily-melt.xlsx", sheet = 1) %>%
     arrange(date)
 
 
-# Land (1910-2022 and 1880-2022 for global temp) Ocean temperatures (1880-2022)
+# Land (1910-2022 and 1880-2022 for global temp) Ocean temperatures (1880-2022) ####
 # https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series/southAmerica/land/all/11/1880-2022
 
 # temperature of the ocean - Global
@@ -99,7 +99,12 @@ land_temps <- left_join(tl_global,tl_africa, by = 'date') %>%
     left_join(tl_asia,by = "date") %>% 
     left_join(tl_europe,by = "date")
 
-
 remove(tl_africa, tl_NA, tl_SA, tl_oceania, tl_asia, tl_europe, tl_global)
+
+# Greenhouse gasses emissions data of countries (1750-2019) in tonnes ####
+# https://www.kaggle.com/datasets/srikantsahu/co2-and-ghg-emission-data
+
+ghg <- read.csv("./data/emission data.csv", sep = ",") %>% 
+    mutate(total_emissions = rowSums(across(where(is.numeric)), na.rm=TRUE))
 
 
