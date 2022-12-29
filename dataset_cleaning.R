@@ -45,12 +45,10 @@ ice_melt <- read.xlsx("./data/greenland-daily-melt.xlsx", sheet = 1) %>%
 # https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series/southAmerica/land/all/11/1880-2022
 
 # temperature of the ocean - Global
-to_global <- read.csv("./data/temp_global_ocean.csv", sep = ",") %>% 
+ocean_temps <- read.csv("./data/temp_global_ocean.csv", sep = ",") %>% 
     mutate(date = paste0(substr(.$Year, 1, 4),"-",substr(.$Year, 5, 6),"-","01")) %>% 
     select(3,2) %>% 
     mutate_at("date", as.Date, format = "%Y-%m-%d")
-
-plot(x = to_global$date, y = to_global$Global_Ocean, type = "l")
 
 # land temperatures for 6 continents + global land temperature
 tl_global <- read.csv("./data/temp_global_land.csv", sep = ",") %>% 
