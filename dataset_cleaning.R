@@ -1,6 +1,8 @@
 #### Dataset loading and cleaning script ####
-library(tidyverse)
-library(openxlsx)
+require(tidyverse)
+require(openxlsx)
+
+remove(list = ls())
 
 # Sea ice extent Dataset ####
 # https://nsidc.org/data/geophysical-measurements
@@ -112,19 +114,44 @@ remove(tl_africa, tl_NA, tl_SA, tl_oceania, tl_asia, tl_europe, tl_global)
 
 # Greenhouse gas emissions data of countries (1990-2019) in tonnes ####
 # https://ourworldindata.org/greenhouse-gas-emissions
+# country codes are "iso alpha 3"
 
 # Total greenhouse gas emissions by country
-ghg_countries <- read.csv("./data/ghg_emissions_countries.csv", sep = ",") %>% 
+ghg_countries_names <- read.csv("./data/ghg_emissions_countries.csv", sep = ",") %>% 
     select(-Code) %>% 
     rename(GHG_emissions = Total.including.LUCF) %>% 
     pivot_wider(names_from = Entity, values_from = GHG_emissions)
+
+ghg_countries_codes <- read.csv("./data/ghg_emissions_countries.csv", sep = ",") %>% 
+    select(-Entity) %>% 
+    filter(Code != "") %>% 
+    rename(GHG_emissions = Total.including.LUCF) %>% 
+    pivot_wider(names_from = Code, values_from = GHG_emissions)
 
 # Total greenhouse gas emissions by industry
 ghg_sectors <- read.csv("./data/ghg_emissions_sectors.csv", sep = ",") %>% 
     filter(Entity == "World")
 
+
+# Annual Co2 emissions per country
+# https://ourworldindata.org/co2-dataset-sources
+# country codes are "iso alpha 3"
+
+co2_names <- read.csv("./data/annual-co2-emissions-per-country.csv", sep = ",") %>% 
+    select(-Code) %>% 
+    rename(CO2_emissions = Annual.CO2.emissions) %>% 
+    pivot_wider(names_from = Entity, values_from = CO2_emissions) %>% 
+    arrange(Year)
+
+co2_codes <- read.csv("./data/annual-co2-emissions-per-country.csv", sep = ",") %>% 
+    select(-Entity) %>% 
+    filter(Code != "") %>% 
+    rename(CO2_emissions = Annual.CO2.emissions) %>% 
+    pivot_wider(names_from = Code, values_from = CO2_emissions) %>% 
+    arrange(Year)
+
 # Biggest CO2 celectrity polluters ####
 # https://weareyard.com/insights/worst-celebrity-private-jet-co2-emission-offenders
 
-
+celebs <- read.csv("./data/celebrity_emissions.csv", sep = ";")
 
