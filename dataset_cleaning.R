@@ -44,7 +44,7 @@ ice_melt <- read.xlsx("./data/greenland-daily-melt.xlsx", sheet = 1) %>%
 
 
 # Land (1910-2022 and 1880-2022 for global temp) Ocean temperatures (1880-2022) ####
-# https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series/southAmerica/land/all/11/1880-2022
+# https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series/
 
 # temperature of the ocean - Global
 ocean_temps <- read.csv("./data/temp_global_ocean.csv", sep = ",") %>% 
