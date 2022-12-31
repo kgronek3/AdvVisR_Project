@@ -153,5 +153,5 @@ co2_codes <- read.csv("./data/annual-co2-emissions-per-country.csv", sep = ",") 
 # Biggest CO2 celectrity polluters ####
 # https://weareyard.com/insights/worst-celebrity-private-jet-co2-emission-offenders
 
-celebs <- read.csv("./data/celebrity_emissions.csv", sep = ";")
+celebs <- read.csv("./data/celebrity_emissions.csv", sep = ";", dec =",")
 
