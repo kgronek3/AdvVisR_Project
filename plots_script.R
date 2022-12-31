@@ -127,11 +127,20 @@ p2
 
 plot_grid(p1,p2)
 
+library(grid)
+source1 <- textGrob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
+         hjust = 1, # text alignment
+         x = 0.99, y = 0.6, # footer positioning inside the section
+         gp = gpar(fontsize = 10, # font size
+                   fontface = 3 # bold type
+         )
+)
 
 grid.arrange(p1,p2,
              ncol = 2,
              widths = c(1,1.15),
-             top = "World average temperatures (1880 - 2022)")
+             top = "World average temperatures (1880 - 2022)",
+             bottom = source1)
 
 
 # World map/Europe map of TOTAL (since industrial era) emmisions by countries ####
