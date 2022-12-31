@@ -3,21 +3,27 @@ This repository contains plots for visualisation project for Advanced Visualisat
 
 # To-Do list:
 0) [x] Gather data for plots
-1) [ ] Opening slide word cloud that spells "Climate change"
-2) [x] World map with total CO2 emissions by country
-3) [ ] Barplot of biggest polluter countries in 2021
-4) [ ] Barplot of biggest polluter celebrities in 2022
-5) [ ] Decomposition of world emission by industry sectors
-6) [ ] Arctic ice sheet coverage (with animations)
-7) [ ] Melting area of ice in arctic (with animations)
+0) [ ] Opening slide word cloud that spells "Climate change"
+1) [x] Land and ocean temperature plots
+2) [x] Heat map of difference of global land and ocean temperatures from the mean
+3) [x] World map with total CO2 emissions by country
+4) [x] Barplot of biggest polluter countries in 2021
+5) [x] Barplot of biggest polluter celebrities in 2022
+6) [x] Decomposition of world emission by industry sectors
+7) [ ] Total Decomposition with treemapify (14_AV_adv_plots_p1)
+8) [ ] Arctic sea ice sheet coverage (with animations)
+9) [ ] Melting area of ice in arctic (with animations)
 
 # Final polish:
-1) [ ] World map with total CO2 emissions by country
-2) [ ] Barplot of biggest polluter countries in 2021
-3) [ ] Barplot of biggest polluter celebrities in 2022
-4) [ ] Decomposition of world emission by industry sectors
-5) [ ] Arctic ice sheet coverage (with animations)
-6) [ ] Melting area of ice in arctic (with animations)
+1) [ ] Land and ocean temperature plots
+2) [x] Heat map of difference of global land and ocean temperatures from the mean
+3) [ ] World map with total CO2 emissions by country
+4) [ ] Barplot of biggest polluter countries in 2021
+5) [ ] Barplot of biggest polluter celebrities in 2022
+6) [ ] Decomposition of world emission by industry sectors
+7) [ ] Total Decomposition with treemapify (14_AV_adv_plots_p1)
+8) [ ] Arctic sea ice sheet coverage (with animations)
+9) [ ] Melting area of ice in arctic (with animations)
 
 
 # Sources
