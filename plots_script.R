@@ -5,7 +5,10 @@ library(viridis)
 library(latex2exp)
 library(cowplot)
 library(gridExtra)
-
+library(ggtext)
+library(glue)
+library(grid)
+library(treemapify)
 
 source("dataset_cleaning.R")
 options(scipen = 10)
@@ -16,7 +19,6 @@ options(scipen = 10)
 #    for example dotted line)
 # 2) Make a seasonal plot for Global temperatures with respect to different
 #    seasons 
-
 
 ggplot(data = ocean_temps) + 
     geom_line(aes(x = date, y = Global_Ocean))
@@ -116,7 +118,6 @@ p2 <- ggplot(T_land_temps, aes(x = month, y = year)) +
                                  barheight = 22)) +
     theme_minimal() + 
     scale_y_continuous(breaks = seq(1880, 2020, by = 20))+
-    #scale_y_continuous(breaks = NULL) +
     theme(panel.grid = element_blank(),
           axis.text.y = element_text(margin = unit(c(0,0.5,0,0), "cm")),
           axis.text.x = element_text(vjust = 13),
@@ -124,31 +125,24 @@ p2 <- ggplot(T_land_temps, aes(x = month, y = year)) +
 
 p2
 
-
-plot_grid(p1,p2)
-
-library(grid)
-source1 <- textGrob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
-         hjust = 1, # text alignment
-         x = 0.99, y = 0.6, # footer positioning inside the section
-         gp = gpar(fontsize = 10, # font size
-                   fontface = 3 # bold type
-         )
-)
+source <- textGrob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
+                   hjust = 1, # text alignment
+                   x = 0.99, y = 0.6, # footer positioning
+                   gp = gpar(fontsize = 10, 
+                             fontface = 3)) # Italics
 
 grid.arrange(p1,p2,
              ncol = 2,
              widths = c(1,1.15),
              top = "World average temperatures (1880 - 2022)",
-             bottom = source1)
+             bottom = source)
 
 
 # World map/Europe map of TOTAL (since industrial era) emmisions by countries ####
 # 1) Make a grid plot with world map, zoom on europe emissions and barplot below
 world <- ne_countries(scale = "medium", returnclass = "sf")
-world
 
-co2_codes <- co2_codes %>%
+co2_codes_2 <- co2_codes %>%
     pivot_longer(-Year) %>% 
     pivot_wider(names_from=Year, values_from=value) %>% 
     mutate(Total = rowSums(across(where(is.numeric)),na.rm = T)) %>%
@@ -156,87 +150,270 @@ co2_codes <- co2_codes %>%
            "total_co2_emissions" = Total) %>% 
     select(iso_a3, total_co2_emissions)
 
-world <- left_join(world, co2_codes, by = "iso_a3")
+world <- left_join(world, co2_codes_2, by = "iso_a3")
 
 format_sep <- function(x) format(x, big.mark = ' ')
 
+
 # World
-ggplot(data = world) +
+W <- world %>% filter(continent != "Antarctica") %>% 
+    ggplot() +
     geom_sf(aes(fill =  total_co2_emissions)) +
-    scale_fill_viridis_c(option = "plasma", trans = "sqrt", guide = guide_colorbar(barwidth = 30), name = NULL, labels = format_sep) +
+    scale_fill_viridis(option = "inferno", trans = "sqrt", 
+                       guide = guide_colorbar(barwidth = 30), 
+                       name = NULL, labels = format_sep, direction = 1) +
     coord_sf(expand = FALSE) +
-    #theme(legend.position = 'right')
-    theme(legend.position = 'bottom')
+    theme(legend.position = 'top')
+W
 
 # Europe
-ggplot(data = world) +
-    # geom_sf(aes(fill = income_grp )) +
+eu <- world %>% filter(continent == "Europe") %>% 
+    ggplot() +
     geom_sf(aes(fill =  total_co2_emissions)) +
-    # scale_fill_brewer(palette = 'YlOrBr') +
-    scale_fill_viridis_c(option = "plasma", trans = "sqrt", guide = guide_colorbar(barwidth = 30), name = NULL,
-                         labels = format_sep) +
-    coord_sf(xlim = c(-30, 50), ylim = c(35, 70), expand = TRUE) +
-    # theme(legend.position = 'right') +
-    theme(legend.position = 'bottom')
+    scale_fill_viridis(option = "inferno", trans = "sqrt",name = NULL, labels = format_sep) +
+    coord_sf(xlim = c(-22, 50), ylim = c(35, 70), expand = TRUE) +
+    theme(legend.position = "none")
+eu
 
+# Asia
+asia <- world %>% filter(continent == "Asia") %>%
+    ggplot() +
+    geom_sf(aes(fill =  total_co2_emissions)) +
+    scale_fill_viridis(option = "inferno", trans = "sqrt",name = NULL, labels = format_sep) +
+    #coord_sf(xlim = c(40, 150), ylim = c(-10, 50), expand = TRUE) +
+    theme(legend.position = "none")
+asia
+
+layout <- rbind(c(1,1,1,1),
+                c(1,1,1,1),
+                c(2,2,3,3),
+                c(2,2,3,3))
+
+grid.arrange(W, eu, asia,
+             layout_matrix = layout)
 
 # Barplot of (10) biggest polluter countries in 2021 ####
-# 1) Sort bars
-# 2) Add flags of countries by the appropriate bars
-# 3) Change breaks on y axis
-# 4) Add average person CO2 emissions over the plot
+# 3) Change breaks on y axis and adjust mean horizontal line
+# 4) Annotate horizontal line and what it equals
 # 5) Add number of tonnes of CO2 vertically inside each bar (or over the bar)
-# 6) Add title, labels and source
-# 7) Add mean emissions of the world as a vertival line
+# 6) Change legend title
+# 
 
-co2_names <- co2_names %>% 
+# unit -> billions of tonnes of CO2
+
+countries_lvl <- c("China",
+                   "United States", 
+                   "India", 
+                   "Russia", 
+                   "Japan",
+                   "Iran", 
+                   "Germany", 
+                   "Saudi Arabia", 
+                   "Indonesia", 
+                   "South Korea")
+
+co2_names_2 <- co2_names %>% 
     filter(Year == 2021) %>% 
-    data.frame()
+    data.frame() 
 
-df <- data.frame("Country" = colnames(co2_names)[-1],
-                 "CO2_2021" = as.numeric(co2_names[1,])[-1]) %>% 
+mean_emissions <- co2_names %>% filter(Year == 2021) %>% 
+    pivot_longer(!Year, names_to = "Countries", values_to = "value") %>% 
+    summarise(mean = mean(value,na.rm = T),
+              N = n()) %>% 
+    select(mean) %>% 
+    mutate(mean = mean/1e9) %>% 
+    pull(mean)
+
+df <- data.frame("Country" = colnames(co2_names_2)[-1],
+                 "CO2_2021" = as.numeric(co2_names_2[1,])[-1]) %>% 
     arrange(desc(CO2_2021)) %>% 
     filter(Country %in% c("China", "United.States", "India", "Russia", "Japan",
                           "Iran", "Germany", "Saudi.Arabia", "Indonesia", 
-                          "South.Korea"))
+                          "South.Korea")) %>% 
+    mutate(across("Country", str_replace, "United.States", "United States")) %>% 
+    mutate(across("Country", str_replace, "South.Korea", "South Korea")) %>% 
+    mutate(across("Country", str_replace, "Saudi.Arabia", "Saudi Arabia")) %>% 
+    mutate(CO2_2021 = CO2_2021/1e9) %>% 
+    mutate(Country = fct_relevel(Country, countries_lvl))
 
-df
+labels <- c(
+    "South Korea" = "<img src='data/flags/South_Korea.png'
+    width='50' /><br>*South Korea*",
+    "Indonesia" = "<img src='data/flags/Indonesia.png'
+    width='50' /><br>*Indonesia*",
+    "Saudi Arabia" = "<img src='data/flags/Saudi_Arabia.png'
+    width='50' /><br>*Saudi Arabia*",
+    "Germany" = "<img src='data/flags/Germany.png'
+    width='50' /><br>*Germany*",
+    "Iran" = "<img src='data/flags/Iran.png'
+    width='53' /><br>*Iran*",
+    "Japan" = "<img src='data/flags/Japan.png'
+    width='50' /><br>*Japan*",
+    "Russia" = "<img src='data/flags/Russia.png'
+    width='50' /><br>*Russia*",
+    "India" = "<img src='data/flags/India.png'
+    width='50' /><br>*India*",
+    "United States" = "<img src='data/flags/USA.png'
+    width='61' /><br>*USA*",
+    "China" = "<img src='data/flags/China.png'
+    width='50' /><br>*China*"
+)
 
-ggplot(data = df, aes(x = factor(Country), y = CO2_2021)) + 
+ggplot(data = df, aes(x = factor(Country), y = CO2_2021, fill = CO2_2021)) + 
     geom_bar(stat = "identity") + 
-    coord_flip()
+    geom_hline(yintercept = mean_emissions, linetype = "dashed",
+               color = "red") + 
+#    coord_flip(clip = "on") + # it doesn't work with element_markdown() <- delete this line
+    scale_fill_viridis(option = "plasma") +
+    scale_x_discrete(name = NULL,
+                     labels = labels) +
+    scale_y_continuous(expand = c(0,0)) +
+    labs(title = "Top 10 biggest country emitters of CO2 in 2021",
+         y = TeX(r'($CO_2$ emissions (billion of tonnes) )'),
+         caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") + 
+    guides(fill = guide_colorbar(title = "Amount")) +
+    theme(#axis.text.x = element_markdown(color = "black", size = 11),
+          plot.caption = element_text(face = "italic"))
+
 
 # Barplot of biggest polluter celebrities in 2022 ####
-# 1) Sort bars
 # 2) Add photos of celebrities over appropriate bars
-# 3) Change breaks on y axis
 # 4) Add average person CO2 emissions over the plot
 # 5) Add number of tonnes of CO2 vertically inside each bar (or over the bar)
 # 7) Add average person CO2 emissions per year (find source for this value)
-# 6) Add title, labels and source
 
-celebs
-colnames(celebs)
-ggplot(data = celebs, aes(x = factor(Celebrity.Jet),y = CO2e.tonnes.)) +
-    geom_bar(stat = "identity")
+celebs %>% as_tibble
+
+celeb_lvl <- c("Taylor Swift",
+               "Drake", 
+               "Floyd Mayweather", 
+               "Jay-Z", 
+               "Kim Kardashian",
+               "A-Rod", 
+               "Steven Spielberg", 
+               "Mark Wahlberg", 
+               "Blake Shelton", 
+               "Jack Nicklaus")
+
+celebs <- celebs %>% 
+    rename("Celebrity.Name" = Celebrity.Jet) %>% 
+    mutate(Celebrity.Name = fct_relevel(Celebrity.Name, celeb_lvl))
+
+
+ggplot(data = celebs, aes(x = Celebrity.Name,y = CO2e.tonnes.)) +
+    geom_bar(stat = "identity") +
+    scale_y_continuous(breaks = seq(0, 3000, by = 500),
+                       limits = c(0,3500),
+                       expand = c(0,0)) +
+    labs(title = "Table 1. Example title",
+         y = TeX(r'($CO_2$ emissions in tonnes )'),
+         x = "Celebrity name",
+         caption = "Source:WeAreYard\nhttps://weareyard.com/insights/worst-celebrity-private-jet-co2-emission-offenders") +
+    theme(plot.caption = element_text(face = "italic"),
+          #axis.text.x = element_text(vjust = 1)
+          )
+
+    
     
 # Decomposition of world emission over time by industry sectors ####
+# 1) add logos for each sector (?)
+# 2) maybe change to percentage of total emissions and make 
+#    it fill the whole area of the plot to show change of distribution over time
+# 3) or Add another plot in grid with the above while keeping the existing one
+sectors <- ghg_sectors %>% 
+    select(-Entity, -Code) %>% 
+    pivot_longer(!Year, names_to = "Industry", values_to = "Emissions") %>% 
+    mutate(Emissions = Emissions/1e9)
 
 sectors <- ghg_sectors %>% 
     select(-Entity, -Code) %>% 
-    pivot_longer(!Year, names_to = "Industry", values_to = "Emissions")
+    pivot_longer(!Year, names_to = "Industry", values_to = "Emissions") %>% 
+    mutate(Emissions = Emissions/1e9) %>% 
+    group_by(Year, Industry) %>% 
+    summarise(n = sum(Emissions)) %>% 
+    mutate(percentage = n /sum(n))
 
-sectors
+sectors %>% tail()
 
 ggplot(sectors, aes(x = Year, y = Emissions, fill = Industry)) +
-    geom_area(alpha = 0.7) +
-    #guides(title = TeX(r'$CO_2$ Emissions'))
-    ylab(TeX(r'($CO_2$ emissions (billion of tonnes) )')) +
-    theme(plot.title = element_text("Table. 1 ")) # nie działa z latex2exp
+    geom_area(color = "black", linetype = 1, size = .25, alpha = 0.8) +
+    guides(fill = guide_legend(title = "Sectors",
+                               byrow = T)) +
+    labs(title = "Table 1. Example title",
+         y = TeX(r'($CO_2$ emissions (billion of tonnes) )'),
+         caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") + 
+    scale_fill_discrete(labels = c("Agriculture",
+                                   "Aviation and shipping",
+                                   "Buildings",
+                                   "Electricity and heat",
+                                   "Fugitive emissions",
+                                   "Industry",
+                                   "Land use change and forestry",
+                                   "Manufacturing and construction",
+                                   "Other fuel combustion",
+                                   "Transport",
+                                   "Waste")) +
+    scale_x_continuous(expand = c(0,0), limits = c(1990,2019),
+                       breaks = seq(1990, 2020, by = 2)) +
+    scale_y_continuous(expand = c(0,0)) +
+    theme(plot.title = element_text(),
+          legend.spacing.y = unit(0.2, "cm"))
     
 
+# percentage structure over time
+ggplot(sectors, aes(x = Year, y = percentage, fill = Industry)) +
+    geom_area(color = "black", linetype = 1, size = .25, alpha = 0.8) +
+    guides(fill = guide_legend(title = "Sectors",
+                               byrow = T)) +
+    labs(title = "Table 1. Example title",
+         y = "Percentage (%) share of industry emissions in total emissions",
+         caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") + 
+    scale_fill_discrete(labels = c("Agriculture",
+                                   "Aviation and shipping",
+                                   "Buildings",
+                                   "Electricity and heat",
+                                   "Fugitive emissions",
+                                   "Industry",
+                                   "Land use change and forestry",
+                                   "Manufacturing and construction",
+                                   "Other fuel combustion",
+                                   "Transport",
+                                   "Waste")) +
+    scale_x_continuous(expand = c(0,0), limits = c(1990,2019),
+                       breaks = seq(1990, 2020, by = 2)) +
+    scale_y_continuous(expand = c(0,0)) +
+    theme(plot.title = element_text(),
+          legend.spacing.y = unit(0.2, "cm"))
 
 # Total Decomposition with treemapify (14_AV_adv_plots_p1) ####
+# 1) Change Colors of fill name accoriding to previous color scheme
+
+ghg_sectors %>% select(-Entity, -Code) %>% 
+    pivot_longer(-Year) %>% 
+    pivot_wider(names_from = Year, values_from = value) %>% 
+    mutate(Total = rowSums(across(where(is.numeric)),na.rm = T)) %>% 
+    mutate(Total = Total/1e9) %>%
+    mutate_at("Total", round, digits = 2) %>% 
+    mutate(unit = "bln t of CO2") %>% 
+    mutate(share = Total/sum(Total) * 100) %>% 
+    mutate_at("share", round, digits = 2) %>% 
+    mutate(percent = "%")%>% 
+    select(name, Total, unit, share, percent) %>%
+    mutate(across("name", str_replace, "Land.use.change.and.forestry", "Land use change\nand forestry")) %>% 
+    mutate(across("name", str_replace, "Manufacturing.and.construction", "Manufacturing and construction")) %>% 
+    mutate(across("name", str_replace, "Electricity.and.heat", "Electricity and heat")) %>% 
+    mutate(across("name", str_replace, "Fugitive.emissions", "Fugitive emissions")) %>% 
+    mutate(across("name", str_replace, "Other.fuel.combustion", "Other fuel\ncombustion")) %>% 
+    mutate(across("name", str_replace, "Aviation.and.shipping", "Aviation and shipping")) %>% 
+    ggplot(aes(area = Total,
+               label = paste0(name,"\n",Total," ", unit,"\n", share, percent), fill = name)) +
+    geom_treemap() +
+    geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+                      grow = T) + # ZASTANÓW SIĘ CZY TO ZMIENIĆ CZY NIE 
+    labs(title = "Structure of total emissions by industry since 1990",
+         caption = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") +
+    theme(legend.position = "none") 
+    
 
 # Arctic ice sheet coverage ####
 
