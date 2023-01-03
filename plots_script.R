@@ -19,11 +19,8 @@ source("dataset_cleaning.R")
 options(scipen = 10)
 
 # Land and ocean temperature plots ####
-# 1) Make plot with all regional temperatures and ocean temperatures in 
-#    a grid (with global temperatures layered in a different line type,
-#    for example dotted line)
-# 2) Make a seasonal plot for Global temperatures with respect to different
-#    seasons 
+# 1) add x labs at the top row
+# 2) expand plots to draw from the beginning
 
 ggplot(data = ocean_temps) + 
     geom_line(aes(x = date, y = Global_Ocean))
