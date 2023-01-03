@@ -264,13 +264,9 @@ source2 <- textGrob("Source: NOAA National Centers for Environmental information
                    gp = gpar(fontsize = 13, fontfamily = "Tahoma", col = "#999999",
                              fontface = "italic")) # Italics
 
-source2 <- text_grob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
-                     family = "Tahoma", size = 11, face = "italic", color = "#4d4d4d")
-
 plot_2 <- grid.arrange(ocean_heat,land_heat,
              ncol = 2,
              widths = c(1,1.15),
-    #         top = "World average temperatures (1880 - 2022)",
              top = text_grob("World average temperatures heatmap (1880 - 2022)",
                              family = "Tahoma", size = 19,
                              face = "bold", color = "#4d4d4d",vjust = 2),
