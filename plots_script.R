@@ -9,6 +9,11 @@ library(ggtext)
 library(glue)
 library(grid)
 library(treemapify)
+library(extrafont)
+extrafont::loadfonts()
+library(ggpubr) # for text_grob instide grid.arrange
+library(svglite)
+
 
 source("dataset_cleaning.R")
 options(scipen = 10)
@@ -206,8 +211,21 @@ ocean_heat <- ggplot(ocean_temps, aes(x = month, y = year)) +
     scale_y_continuous(breaks = NULL) +
     theme(panel.grid = element_blank(),
           legend.position = "left",
-          axis.text.x = element_text(vjust = 13),
-          plot.title = element_text(vjust = -5, hjust = 0.5))
+          axis.text.y = element_text(margin = unit(c(0,0.5,0,0), "cm"),
+                                     family = 'Tahoma',face = "bold", size = 11),
+          axis.text.x = element_text(vjust = 12,
+                                     family = 'Tahoma',face = "bold", size = 11),
+          plot.title = element_text(color = '#404040', size = 19,
+                                    vjust = -8, hjust = 0.5,
+                                    face = "italic", family = "Tahoma"),
+          axis.text = element_text(color = '#404040',
+                                   family = 'Tahoma'),
+          legend.title = element_text(color = "#404040",family = "Tahoma", 
+                                      size = 12),
+          legend.text = element_text(color = '#404040',
+                                     size = 12,
+                                     face = 'plain',
+                                     family = 'Tahoma'))
 
 land_heat <- ggplot(land_temps, aes(x = month, y = year)) + 
     geom_tile(aes(fill = Global_Land_Temperature)) + 
@@ -223,21 +241,41 @@ land_heat <- ggplot(land_temps, aes(x = month, y = year)) +
     theme_minimal() + 
     scale_y_continuous(breaks = seq(1880, 2020, by = 20))+
     theme(panel.grid = element_blank(),
-          axis.text.y = element_text(margin = unit(c(0,0.5,0,0), "cm")),
-          axis.text.x = element_text(vjust = 13),
-          plot.title = element_text(vjust = -5, hjust = 0.5))
+          axis.text.y = element_text(margin = unit(c(0,0.5,0,0), "cm"),
+                                     family = 'Tahoma',face = "bold", size = 11),
+          axis.text.x = element_text(vjust = 12,
+                                     family = 'Tahoma',face = "bold", size = 11),
+          plot.title = element_text(color = '#404040', size = 19,
+                                    vjust = -8, hjust = 0.5,
+                                    face = "italic", family = "Tahoma"),
+          axis.text = element_text(color = '#404040',
+                                   family = 'Tahoma'),
+          legend.title = element_text(color = "#404040",family = "Tahoma", 
+                                      size = 12),
+          legend.text = element_text(color = '#404040',
+                                     size = 12,
+                                     face = 'plain',
+                                     family = 'Tahoma'))
+land_heat
 
 source2 <- textGrob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
                    hjust = 1, # text alignment
                    x = 0.99, y = 0.6, # footer positioning
-                   gp = gpar(fontsize = 10, 
-                             fontface = 3)) # Italics
+                   gp = gpar(fontsize = 13, fontfamily = "Tahoma", col = "#999999",
+                             fontface = "italic")) # Italics
 
-grid.arrange(ocean_heat,land_heat,
+source2 <- text_grob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
+                     family = "Tahoma", size = 11, face = "italic", color = "#4d4d4d")
+
+plot_2 <- grid.arrange(ocean_heat,land_heat,
              ncol = 2,
              widths = c(1,1.15),
-             top = "World average temperatures (1880 - 2022)",
+    #         top = "World average temperatures (1880 - 2022)",
+             top = text_grob("World average temperatures heatmap (1880 - 2022)",
+                             family = "Tahoma", size = 19,
+                             face = "bold", color = "#4d4d4d",vjust = 2),
              bottom = source2)
+ggsave(file = "plots/plot_heat_map.svg", plot = plot_2, width = 14, height = 12)
 
 
 # World map/Europe map of TOTAL (since industrial era) emmisions by countries ####
