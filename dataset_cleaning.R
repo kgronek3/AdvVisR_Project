@@ -23,6 +23,7 @@ ice_south <- read.csv("./data/S_seaice.csv", sep = ",") %>%
 
 # Daily Surface Melt Extent ####
 # http://nsidc.org/greenland-today/greenland-today-data-and-analysis-tools/
+# NOT USED IN THE FINAL PLOTS SCRIPT
 
 ice_melt <- read.xlsx("./data/greenland-daily-melt.xlsx", sheet = 1) %>% 
     select(-X47,-X48) %>% 
