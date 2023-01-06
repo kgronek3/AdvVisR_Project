@@ -1,3 +1,4 @@
+#### Beginning ####
 library(janitor)
 library(rnaturalearth)
 library(lubridate)
@@ -10,134 +11,136 @@ library(glue)
 library(grid)
 library(treemapify)
 library(extrafont)
-extrafont::loadfonts()
 library(ggpubr) # for text_grob instide grid.arrange
 library(svglite)
-
+library(RColorBrewer)
+extrafont::loadfonts()
 
 source("dataset_cleaning.R")
 options(scipen = 10)
 
 # Land and ocean temperature plots ####
-# 1) add x labs at the top row
-# 2) expand plots to draw from the beginning
 
-ggplot(data = ocean_temps) + 
-    geom_line(aes(x = date, y = Global_Ocean))
+theme_general <- theme(
+    plot.title = element_text(color = '#4d4d4d',
+                              size = 12,
+                              face = 'bold',
+                              family = 'Tahoma'),
+    plot.subtitle = element_text(color = '#999999',
+                                 size = 10,
+                                 face = 'plain',
+                                 family = 'Tahoma'),
+    plot.caption = element_text(color = '#999999',
+                                size = 12,
+                                face = 'plain',
+                                family = 'Tahoma'),
+    axis.title = element_text(face = "plain",
+                              color = "#999999",
+                              family = 'Tahoma'),
+    axis.title.x = element_text(size = 15),
+    axis.title.y = element_text(size = 15),
+    axis.text = element_text(color = '#404040',
+                             family = 'Tahoma'),
+    panel.background = element_rect(fill = "white", colour = "white", linewidth = 2),
+    axis.ticks = element_blank(),
+    panel.grid.major = element_line(colour = "#999999", linetype = 'dashed'),
+    axis.line.y = element_line(colour = "#999999", linetype = "solid", linewidth = 1),
+    axis.line.x = element_line(colour = "#999999", linetype = "solid", linewidth = 1),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.y = element_text(family = 'Tahoma',face = "bold", size = 11),
+    axis.text.x = element_text(family = 'Tahoma',face = "bold", size = 11)
+)
 
-land_temps %>% 
-    filter(!is.na(Africa_Temperature)) %>% 
-    pivot_longer(!date,names_to = "Region", values_to = "Temperature") %>% 
-    ggplot(aes(x = date, y = Temperature, group = Region, color = Region)) +
-    geom_line()
-
-
-land_temps %>% 
-    filter(!is.na(Africa_Temperature)) %>% 
-    pivot_longer(!date,names_to = "Region", values_to = "Temperature") %>% 
-    ggplot(aes(x = date, y = Temperature, group = Region, color = Region)) +
-    geom_line()
-
-summary(land_temps)
-
-# labs
 lims <- c(-5.5,5)
-
-wo_y <- labs(y = element_blank())
 
 p1 <- land_temps %>% 
     filter(!is.na(Africa_Temperature)) %>% 
     ggplot(aes(x = date, y = Africa_Temperature)) +
-    geom_line(color = "maroon4", alpha = 0.5) +
+    geom_point(color = "#62938b", alpha = 0.5) +
     labs(title = "Africa") +
-    geom_smooth(se = FALSE, linetype = "dashed", size = 1, color = "black") +
-    # without BOTTOM lab 
-    theme(axis.ticks.x = element_blank()) +
+    geom_smooth(se = FALSE, method = "gam", linetype = "dashed", linewidth = 1.2, color = "black") +
     scale_y_continuous(limits = lims) + 
-    scale_x_continuous(labels = NULL) +
     labs(x = element_blank()) +
-    labs(y = "Temperature in Celsius")
-    
-p1
+    labs(y = "Temperature in Celsius") +
+    theme_general +
+    theme(axis.ticks.x = element_blank())
 
 p2 <- land_temps %>% 
     filter(!is.na(Africa_Temperature)) %>% 
     ggplot(aes(x = date, y = North_America_Temperature)) +
-    geom_line(color = "mediumblue", alpha = 0.5) +
-    geom_smooth(se = FALSE, linetype = "dashed", size = 1, color = "black") +
+    geom_point(color = "#7d9b49", alpha = 0.5) +
+    geom_smooth(se = FALSE, method = "gam", linetype = "dashed", linewidth = 1.2, color = "black") +
     labs(title = "North America") +
-    # without BOTH
+    theme_general +
     theme(axis.ticks.x = element_blank(),
           axis.ticks.y = element_blank()) + 
     scale_y_continuous(labels = NULL,limits = lims) +
-    scale_x_continuous(labels = NULL,) +
     labs(x = element_blank(), y = element_blank())
-p2
 
 p3 <- land_temps %>% 
     filter(!is.na(Africa_Temperature)) %>% 
     ggplot(aes(x = date, y = South_America_Temperature)) +
-    geom_line(color = "aquamarine4") +
-    geom_smooth(se = FALSE, linetype = "dashed", size = 1, color = "black") +
+    geom_point(color = "#858298", alpha = 0.5) +
+    geom_smooth(se = FALSE, method = "gam", linetype = "dashed", linewidth = 1.2, color = "black") +
     labs(title = "South America") +
-    # without BOTH
+    theme_general + 
     theme(axis.ticks.x = element_blank(),
           axis.ticks.y = element_blank()) + 
     scale_y_continuous(labels = NULL,limits = lims) +
-    scale_x_continuous(labels = NULL,) +
     labs(x = element_blank(), y = element_blank())
-p3
 
 p4 <- land_temps %>% 
     filter(!is.na(Africa_Temperature)) %>% 
     ggplot(aes(x = date, y = Europe_Temperature)) +
-    geom_line(color = "springgreen") +
-    geom_smooth(se = FALSE, linetype = "dashed", size = 1, color = "black") +
+    geom_point(color = "#af594f", alpha = 0.5) +
+    geom_smooth(se = FALSE, method = "gam", linetype = "dashed", linewidth = 1.2, color = "black") +
     labs(title = "Europe") +
-    # without Y axis
+    theme_general + 
     scale_y_continuous(limits = lims) + 
     labs(x = element_blank()) +
     labs(y = "Temperature in Celsius")
 
-p4
-
 p5 <- land_temps %>% 
     filter(!is.na(Africa_Temperature)) %>% 
     ggplot(aes(x = date, y = Asia_Temperature)) +
-    geom_line(color = "darkslategray") +
-    geom_smooth(se = FALSE, linetype = "dashed", size = 1, color = "black") +
+    geom_point(color = "#597b93", alpha = 0.5) +
+    geom_smooth(se = FALSE, method = "gam", linetype = "dashed", linewidth = 1.2, color = "black") +
     labs(title = "Asia") +
-    # without Y axis
+    theme_general + 
     theme(axis.ticks.y = element_blank()) + 
     scale_y_continuous(labels = NULL, limits = lims) + 
     labs(x = element_blank(), y = element_blank())
-p5
 
 p6 <- land_temps %>% 
     filter(!is.na(Africa_Temperature)) %>% 
     ggplot(aes(x = date, y = Oceania_Temperature)) +
-    geom_line(color = "coral2") +
-    geom_smooth(se = FALSE, linetype = "dashed", size = 1, color = "black") +
+    geom_point(color = "#b17d44", alpha = 0.5) +
+    geom_smooth(se = FALSE, method = "gam", linetype = "dashed", linewidth = 1.2, color = "black") +
     labs(title = "Oceania") +
-    # without Y axis
+    theme_general + 
     theme(axis.ticks.y = element_blank()) + 
     scale_y_continuous(labels = NULL, limits = lims) + 
     labs(x = element_blank(), y = element_blank())
-p6
 
 layout_temps <- rbind(c(1,2,3),
                       c(4,5,6))
 
 source1 <- textGrob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
-                    hjust = 1, # text alignment
-                    x = 0.99, y = 0.6, # footer positioning
-                    gp = gpar(fontsize = 10, 
-                              fontface = 3)) # Italics
+                    hjust = 1,
+                    x = 0.99, y = 0.6,
+                    gp = gpar(fontsize = 13, fontfamily = "Tahoma", col = "#999999",
+                              fontface = "italic"))
 
-grid.arrange(p1,p2,p3,p4,p5,p6,
-             top = "Figure 1. Global title for all the plots ",
+
+plot_1 <- grid.arrange(p1,p2,p3,p4,p5,p6,
+             top = text_grob("Monthly average temperatures by continent (1910 - 2022)",
+                             family = "Tahoma", size = 19,
+                             face = "bold", color = "#4d4d4d"),
              layout_matrix = layout_temps,
              bottom = source1)
+
+ggsave(file = "plots/1_plot_scatter.svg", plot = plot_1, width = 14, height = 12)
 
 
 # Heat map of global land and ocean temperatures since 1880 ####
@@ -253,7 +256,6 @@ land_heat <- ggplot(land_temps, aes(x = month, y = year)) +
                                      size = 12,
                                      face = 'plain',
                                      family = 'Tahoma'))
-land_heat
 
 source2 <- textGrob("Source: NOAA National Centers for Environmental information\n https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series",
                    hjust = 1, # text alignment
@@ -268,46 +270,120 @@ plot_2 <- grid.arrange(ocean_heat,land_heat,
                              family = "Tahoma", size = 19,
                              face = "bold", color = "#4d4d4d",vjust = 2),
              bottom = source2)
-ggsave(file = "plots/plot_heat_map.svg", plot = plot_2, width = 14, height = 12)
+ggsave(file = "plots/2_plot_heat_map.svg", plot = plot_2, width = 14, height = 12)
 
 
-# World map/Europe map of TOTAL (since industrial era) emmisions by countries ####
+# World map/Europe map of TOTAL (since industrial revolution) emmisions by countries ####
 # 1) Make a grid plot with world map, zoom on europe emissions and barplot below
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
-co2_codes_2 <- co2_codes %>%
+co2_codes_2 <- 
+    co2_codes %>%
     pivot_longer(-Year) %>% 
     pivot_wider(names_from=Year, values_from=value) %>% 
     mutate(Total = rowSums(across(where(is.numeric)),na.rm = T)) %>%
     rename("iso_a3" = name,
            "total_co2_emissions" = Total) %>% 
+    mutate(total_co2_emissions = total_co2_emissions/1e9) %>% 
+    #select(total_co2_emissions) %>% 
+    #arrange(desc(total_co2_emissions)) %>% 
+    #head()
     select(iso_a3, total_co2_emissions)
 
 world <- left_join(world, co2_codes_2, by = "iso_a3")
 
-format_sep <- function(x) format(x, big.mark = ' ')
 
-world %>% arrange(desc(total_co2_emissions)) %>% 
-    select(admin,total_co2_emissions) %>% head(n = 10)
+limits_maps <- c(0.000150000,430)
+
+theme_general <- theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+)
+
+
 
 # World
+
+guides(fill = guide_colorbar(title = "Temperature",
+                             barwidth = 2,
+                             barheight = 22,
+                             label.position = "left")) 
+
 W <- world %>% filter(continent != "Antarctica") %>% 
     ggplot() +
     geom_sf(aes(fill =  total_co2_emissions)) +
-    scale_fill_viridis(option = "inferno", trans = "sqrt", 
-                       guide = guide_colorbar(barwidth = 30), 
-                       name = NULL, labels = format_sep, direction = 1) +
+    #scale_fill_viridis_c(option = "inferno", trans = "sqrt", 
+    #                   guide = guide_colorbar(barwidth = 60,
+    #                                          ticks.linewidth = 3/.pt,
+    #                                          lablel.position = "bottom",
+    #                                          title = "Billions of tons of CO2 emissioned"), 
+    #                   name = NULL, direction = 1,
+    #                   limits = limits_maps,) +
+    scale_fill_gradientn(
+        colors = c("#9DBF9E", "#FCB97D", "#A84268"),
+        trans = "sqrt",
+        na.value = "grey80",
+        limits = limits_maps,
+        name = NULL,
+        breaks = c(1,2,5,10,20,30,50,100,200,300,400),
+        guide = guide_colorbar(barwidth = 60,
+                               ticks.linewidth = 3/.pt,
+                               lablel.position = "bottom",
+                               title = "Billions of tons of CO2 emissioned",
+                               ticks.colour = "#4d4d4d",
+                               title.position = "bottom",
+                               title.hjust = 0.5)) +
     coord_sf(expand = FALSE) +
-    theme_minimal() +
-    theme(legend.position = 'top')
+    labs(x = "Longitude", y = "Latitude", 
+         title ="World map of countries total emmisions since industrial revolution") +
+    theme(legend.position = 'bottom',
+          panel.grid.major = element_line(color = "#999999", 
+                                          linetype = "dashed",
+                                          linewidth = 0.5),
+          panel.background = element_rect(fill = "#d7f4fa"),
+          panel.border = element_rect(fill = NA),
+          plot.title = element_text(color = '#4d4d4d',
+                                    size = 27,
+                                    face = 'bold',
+                                    family = 'Tahoma'),
+          plot.subtitle = element_text(color = '#999999',
+                                       size = 10,
+                                       face = 'plain',
+                                       family = 'Tahoma'),
+          plot.caption = element_text(color = '#999999',
+                                      size = 12,
+                                      face = 'plain',
+                                      family = 'Tahoma'),
+          axis.title = element_text(face = "plain",
+                                    color = "#999999",
+                                    family = 'Tahoma'),
+          axis.title.x = element_text(size = 15),
+          axis.title.y = element_text(size = 15),
+          axis.text = element_text(color = '#404040',
+                                   family = 'Tahoma'),
+          axis.ticks = element_blank(),
+          axis.line.y = element_line(colour = "#999999", linetype = "solid", linewidth = 1),
+          axis.line.x = element_line(colour = "#999999", linetype = "solid", linewidth = 1),
+          axis.text.y = element_text(family = 'Tahoma',face = "bold", size = 11),
+          axis.text.x = element_text(family = 'Tahoma',face = "bold", size = 11),
+          legend.title = element_text(color = "#404040",family = "Tahoma", 
+                                      size = 12),
+          legend.text = element_text(color = '#404040',
+                                     size = 12,
+                                     face = 'plain',
+                                     family = 'Tahoma')
+          )
     
-W
+ggsave(file = "plots/3_plot_emissions_map.png", plot = W, width = 14, height = 12)
+ggsave(file = "plots/3_plot_emissions_map.svg", plot = W, width = 14, height = 12)
+
 
 # Europe
 eu <- world %>% filter(continent == "Europe") %>% 
     ggplot() +
     geom_sf(aes(fill =  total_co2_emissions)) +
-    scale_fill_viridis(option = "inferno", trans = "sqrt",name = NULL, labels = format_sep) +
+    scale_fill_viridis(option = "inferno", trans = "sqrt",name = NULL, labels = format_sep,
+                       limits = limits_maps) +
     coord_sf(xlim = c(-22, 50), ylim = c(35, 70), expand = TRUE) +
     theme(legend.position = "none")
 eu
@@ -316,7 +392,8 @@ eu
 asia <- world %>% filter(continent == "Asia") %>%
     ggplot() +
     geom_sf(aes(fill =  total_co2_emissions)) +
-    scale_fill_viridis(option = "inferno", trans = "sqrt",name = NULL, labels = format_sep) +
+    scale_fill_viridis(option = "inferno", trans = "sqrt",name = NULL, labels = format_sep,
+                       limits = limits_maps) +
     #coord_sf(xlim = c(40, 150), ylim = c(-10, 50), expand = TRUE) +
     theme(legend.position = "none")
 asia
@@ -368,10 +445,11 @@ df <- data.frame("Country" = colnames(co2_names_2)[-1],
     mutate(across("Country", str_replace, "Saudi.Arabia", "Saudi Arabia")) %>% 
     mutate(CO2_2021 = CO2_2021/1e9) %>% 
     mutate(Country = fct_relevel(Country, countries_lvl)) %>% 
-    mutate(labels_co2 = paste0(as.character(round(CO2_2021, digits = 3)), " bln t CO2")) %>% 
+    mutate(labels_co2 = paste0(as.character(round(CO2_2021, digits = 3)), " bln")) %>% 
     mutate(labels_pos = case_when(Country == "China" ~ CO2_2021 - 2,
-                                  Country %in% c("United States", "India") ~ CO2_2021 - 1,
-                                  TRUE ~ CO2_2021 + 2))
+                                  Country %in% c("United States", "India") ~ CO2_2021 - 0.8,
+                                  Country %in% c("Russia", "Japan") ~ CO2_2021 + 0.9,
+                                  TRUE ~ CO2_2021 + 1.2))
 
 labels_flags <- c(
     "South Korea" = "<img src='data/flags/South_Korea.png'
@@ -383,7 +461,7 @@ labels_flags <- c(
     "Germany" = "<img src='data/flags/Germany.png'
     width='50' /><br>*Germany*",
     "Iran" = "<img src='data/flags/Iran.png'
-    width='53' /><br>*Iran*",
+    width='55' /><br>*Iran*",
     "Japan" = "<img src='data/flags/Japan.png'
     width='50' /><br>*Japan*",
     "Russia" = "<img src='data/flags/Russia.png'
@@ -396,39 +474,90 @@ labels_flags <- c(
     width='50' /><br>*China*"
 )
 
-ggplot(data = df, aes(x = factor(Country), y = CO2_2021, fill = CO2_2021)) + 
+
+theme_general <- theme(
+    plot.title = element_text(color = '#4d4d4d',
+                              size = 27,
+                              face = 'bold',
+                              family = 'Tahoma'),
+    plot.subtitle = element_text(color = '#999999',
+                                 size = 10,
+                                 face = 'plain',
+                                 family = 'Tahoma'),
+    plot.caption = element_text(color = '#999999',
+                                size = 12,
+                                face = 'plain',
+                                family = 'Tahoma'),
+    axis.title = element_text(face = "plain",
+                              color = "#999999",
+                              family = 'Tahoma'),
+    axis.title.x = element_text(size = 15),
+    axis.title.y = element_text(size = 15),
+    axis.text = element_text(color = '#404040',
+                             family = 'Tahoma'),
+    panel.background =  # background of the area between the axes
+        element_rect(fill = "white", colour = "white", linewidth = 2),
+    axis.ticks = element_blank(), # Label points on axes
+    panel.grid.major = element_line(colour = "#999999", linetype = 'dashed'), # Set the main lines of the plot grid
+)
+
+theme_x <-  theme(
+    # Configure lines on the plot
+    axis.line.y = element_line(colour = "#999999", linetype = "solid", linewidth = 1), # Alter axes lines
+    axis.line.x = element_line(colour = "#999999", linetype = "solid", linewidth = 1), # Alter axes lines
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_line(colour = "#cccccc", linetype = 'dashed'), # Add additional grid lines
+    panel.grid.major.x = element_blank(),
+    axis.text.y = element_text(family = 'Tahoma',face = "bold", size = 11),
+    axis.text.x = element_text(family = 'Tahoma',face = "bold", size = 11),
+)
+
+plot_4 <- ggplot(data = df, aes(x = factor(Country), y = CO2_2021, fill = factor(Country))) + 
     geom_bar(stat = "identity") + 
-    geom_hline(yintercept = mean_emissions, linetype = "dashed",
-               color = "red") + 
+    geom_hline(yintercept = mean_emissions, linetype = "dotdash",
+               color = "red", linewidth = 1.5) + 
+    theme_general + theme_x +
     ggtext::geom_richtext(aes(x = countries_lvl, y = labels_pos, label = labels_co2),
                           fill = NA,
                           size = 8,
+                          family = "Tahoma",
                           fontface = "italic",
                           label.color = NA,
-                          angle = 90) +
-    geom_curve(aes(x = "Japan", xend = "Saudi Arabia", y = 9, yend = mean_emissions + 0.25),
+                          angle = 90
+                          ) +
+    geom_curve(aes(x = 5.5, xend = 7.5, y = 8.8, yend = mean_emissions + 0.25),
                arrow = arrow(length = unit (0.03, "npc")),
                curvature = -0.6,
                linewidth = 1) +
-    ggtext::geom_richtext(aes(x = "Russia", y = 9.2, label = paste0("Mean emissions are equal", "\n",
-                                                                  round(mean_emissions,digits = 2),
-                                                                  "bln of tonnes of CO2")),
+    ggtext::geom_richtext(aes(x = 4, y = 9.2, 
+                              label = "Mean emissions for 2021 are equal to"),
                           fill = NA,
-                          size = 5,
+                          size = 8,
+                          family = "Tahoma",
                           fontface = "italic",
                           label.color = NA) +
-    scale_fill_viridis(option = "plasma") +
+    ggtext::geom_richtext(aes(x = 4, y = 8.9, 
+                              label = paste0(round(mean_emissions,digits = 2),
+                                             " bln of tonnes of CO2")),
+                          fill = NA,
+                          size = 8,
+                          family = "Tahoma",
+                          fontface = "italic",
+                          label.color = NA) +
+    scale_fill_manual(values=RColorBrewer::brewer.pal(10, "Set3")) + 
     scale_x_discrete(name = NULL,
                      labels = labels_flags) +
     scale_y_continuous(expand = c(0,0), breaks = c(0,3,6,9,12), limits = c(0,12)) +
     labs(title = "Top 10 biggest country emitters of CO2 in 2021",
          y = TeX(r'($CO_2$ emissions (billion of tonnes) )'),
          caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") + 
-    guides(fill = guide_colorbar(title = "CO2\nemissions\n(bln of tonnes)")) +
-    theme(#axis.text.x = element_markdown(color = "black", size = 11),
+    theme(axis.text.x = element_markdown(color = "black", size = 11),
           plot.caption = element_text(face = "italic"),
-          axis.ticks.x = element_blank()
-          )
+          axis.ticks.x = element_blank(),
+          legend.position = "none")
+
+ggsave(file = "plots/4_plot_countries.svg", plot = plot_4, width = 14, height = 12)
+ggsave(file = "plots/4_plot_countries.png", plot = plot_4, width = 14, height = 12)
 
 
 # Barplot of biggest polluter celebrities in 2022 ####
@@ -451,32 +580,70 @@ labels_celeb <- c(
     "Taylor Swift" = "*Singer*<br><img src='data/photos/Taylor_Swift.jpg'
     width='64' />",
     "Drake" = "*Rapper*<br><img src='data/photos/Drake.jpg'
-    width='64' />",
+    width='80' />",
     "Floyd Mayweather" = "*Boxer*<br><img src='data/photos/Floyd_Mayweather.jpg'
-    width='64' />",
+    width='67' />",
     "Jay-Z" = "*Rapper*<br><img src='data/photos/Jay-Z.jpg'
-    width='64' />",
+    width='70' />",
     "Kim Kardashian" = "*Influencer*<br><img src='data/photos/Kim_Kardashian.jpg'
-    width='64' />",
+    width='70' />",
     "A-Rod" = "*Baseballer*<br><img src='data/photos/A-Rod.jpg'
-    width='64' />",
+    width='70' />",
     "Steven Spielberg" = "*Director*<br><img src='data/photos/Steven_Spielberg.jpg'
-    width='64' />",
+    width='70' />",
     "Mark Wahlberg" = "*Actor*<br><img src='data/photos/Mark_Wahlberg.jpg'
-    width='64' />",
+    width='70' />",
     "Blake Shelton" = "*Singer*<br><img src='data/photos/Blake_Shelton.jpg'
-    width='64' />",
+    width='70' />",
     "Jack Nicklaus" = "*Golfer*<br><img src='data/photos/Jack_Nicklaus.jpg'
-    width='64' />"
+    width='70' />"
 )
 
-celebs %>% 
+theme_general <- theme(
+    plot.title = element_text(color = '#4d4d4d',
+                              size = 27,
+                              face = 'bold',
+                              family = 'Tahoma'),
+    plot.subtitle = element_text(color = '#999999',
+                                 size = 10,
+                                 face = 'plain',
+                                 family = 'Tahoma'),
+    plot.caption = element_text(color = '#999999',
+                                size = 12,
+                                face = 'plain',
+                                family = 'Tahoma'),
+    axis.title = element_text(face = "plain",
+                              color = "#999999",
+                              family = 'Tahoma'),
+    axis.title.x = element_text(size = 13),
+    axis.title.y = element_text(size = 15),
+    axis.text = element_text(color = '#404040',
+                             family = 'Tahoma'),
+    panel.background =  # background of the area between the axes
+        element_rect(fill = "white", colour = "white", linewidth = 2),
+    axis.ticks = element_blank(), # Label points on axes
+    panel.grid.major = element_line(colour = "#999999", linetype = 'dashed'), # Set the main lines of the plot grid
+)
+
+theme_x <-  theme(
+    # Configure lines on the plot
+    axis.line.y = element_line(colour = "#999999", linetype = "solid", linewidth = 1), # Alter axes lines
+    axis.line.x = element_line(colour = "#999999", linetype = "solid", linewidth = 1), # Alter axes lines
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_line(colour = "#cccccc", linetype = 'dashed'), # Add additional grid lines
+    panel.grid.major.x = element_blank(),
+    axis.text.y = element_text(family = 'Tahoma',face = "bold", size = 11),
+    axis.text.x = element_text(family = 'Tahoma',face = "bold", size = 11),
+)
+
+plot_5 <- celebs %>% 
     rename("Celebrity.Name" = Celebrity.Jet) %>% 
     mutate(Celebrity.Name = fct_relevel(Celebrity.Name, celeb_lvl)) %>% 
     mutate(labels_co2 = paste0(as.character(round(CO2e.tonnes., digits = 0)), " tonnes")) %>% 
 ggplot(aes(x = Celebrity.Name,y = CO2e.tonnes., fill = Celebrity.Name)) +
     geom_bar(stat = "identity") +
-    ggtext::geom_richtext(aes(x = Celebrity.Name, y = CO2e.tonnes. + 600, label = labels_celeb), # photos
+    scale_fill_manual(values=RColorBrewer::brewer.pal(10, "Spectral")) + 
+    ggtext::geom_richtext(aes(x = Celebrity.Name, y = CO2e.tonnes. + 400, label = labels_celeb), # photos
                           fill = NA,
                           size = 5,
                           fontface = "italic",
@@ -499,19 +666,18 @@ ggplot(aes(x = Celebrity.Name,y = CO2e.tonnes., fill = Celebrity.Name)) +
          y = TeX(r'($CO_2$ emissions in tonnes )'),
          x = element_blank(),
          caption = "Source:WeAreYard\nhttps://weareyard.com/insights/worst-celebrity-private-jet-co2-emission-offenders") +
+    theme_general + theme_x +
     theme(plot.caption = element_text(face = "italic"),
           #axis.text.x = element_text(vjust = 1)
           legend.position = "none",
           ) 
-    
+plot_5    
+ggsave(file = "plots/plot_celebrities.png", plot = plot_5, width = 14, height = 12)
 
     
-    
+
 # Decomposition of world emission over time by industry sectors ####
-# 1) add logos for each sector (?)
-# 2) maybe change to percentage of total emissions and make 
-#    it fill the whole area of the plot to show change of distribution over time
-# 3) or Add another plot in grid with the above while keeping the existing one
+
 sectors <- ghg_sectors %>% 
     select(-Entity, -Code) %>% 
     pivot_longer(!Year, names_to = "Industry", values_to = "Emissions") %>% 
@@ -558,27 +724,58 @@ sectors2 <- ghg_sectors %>%
 beg_structure <- sectors2 %>% 
     filter(Year == 1990) %>%
     arrange(desc(Industry)) %>% 
-    mutate(cum_per = cumsum(percentage)) %>% 
-    mutate_at("cum_per", round, digits = 3) %>% 
-    pull(cum_per)
+    mutate(cum_per = cumsum(percentage))
+
+beg_structure$new <- rep(0,length(beg_structure$cum_per))
+beg_structure$new[1] <- beg_structure$cum_per[1]/2     
+for (i in 2:length(beg_structure$cum_per)) {
+beg_structure$new[i] <- beg_structure$cum_per[i] - 
+    (beg_structure$cum_per[i] - beg_structure$cum_per[i-1])/2
+
+}
+
+beg_structure_1 <- beg_structure %>% 
+    pull(new)
+
+beg_structure_2 <- beg_structure %>% 
+    mutate(percentage = percentage * 100) %>% 
+    mutate_at("percentage", round, digits = 2) %>% 
+    mutate(labels_beg = paste0(percentage, " %")) %>% 
+    pull(labels_beg)
 
 end_structure <- sectors2 %>% 
     filter(Year == 2019) %>%
     arrange(desc(Industry)) %>% 
-    mutate(cum_per = cumsum(percentage)) %>% 
-    mutate_at("cum_per", round, digits = 3) %>% 
-    pull(cum_per)
+    mutate(cum_per = cumsum(percentage))
 
+end_structure$new <- rep(0,length(end_structure$cum_per))
+end_structure$new[1] <- end_structure$cum_per[1]/2     
+for (i in 2:length(end_structure$cum_per)) {
+    end_structure$new[i] <- end_structure$cum_per[i] - 
+        (end_structure$cum_per[i] - end_structure$cum_per[i-1])/2
+    
+}
 
+end_structure_1 <- end_structure %>% 
+    pull(new)
+
+end_structure_2 <- end_structure %>% 
+    mutate(percentage = percentage * 100) %>% 
+    mutate_at("percentage", round, digits = 2) %>% 
+    mutate(labels_beg = paste0(percentage, " %")) %>% 
+    pull(labels_beg)
 
 ggplot(sectors2, aes(x = Year, y = percentage, fill = Industry)) +
     geom_area(color = "black", linetype = 1, linewidth = .25, alpha = 0.8) +
     guides(fill = guide_legend(title = "Sectors",
                                byrow = T)) +
-    labs(title = "Table 1. Example title",
+    labs(title = "CO2 emissions structure by sectors (1990-2019)",
          y = "Percentage (%) share of industry emissions in total emissions",
-         caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") + 
-    scale_fill_discrete(labels = c("Agriculture",
+         x = NULL,
+         caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") +
+    scale_fill_manual(values=c(RColorBrewer::brewer.pal(10, "Paired"), 
+                               RColorBrewer::brewer.pal(12, "Paired")[12]),
+                      labels = c("Agriculture",
                                    "Aviation and shipping",
                                    "Buildings",
                                    "Electricity and heat",
@@ -589,18 +786,20 @@ ggplot(sectors2, aes(x = Year, y = percentage, fill = Industry)) +
                                    "Other fuel combustion",
                                    "Transport",
                                    "Waste")) +
+    theme_general +
     scale_x_continuous(expand = c(0,0), limits = c(1990,2019),
                        breaks = seq(1990, 2020, by = 2)) +
-    scale_y_continuous(expand = c(0,0), labels = scales::percent,
-                       breaks = beg_structure,
+    scale_y_continuous(expand = c(0,0), #labels = scales::percent,
+                       breaks = beg_structure_1,
+                       labels = beg_structure_2,
                        sec.axis = sec_axis(trans = ~., 
-                                           labels = scales::percent,
-                                           breaks = end_structure)) +
+                                           labels = end_structure_2,
+                                           breaks = end_structure_1)) +
     theme(plot.title = element_text(),
-          legend.spacing.y = unit(0.2, "cm"))
+          legend.spacing.y = unit(0.2, "cm"),
+          axis.text.x = element_text(angle = 45, vjust = 0.5))
 
 # Total Decomposition with treemapify ####
-# 1) Change Colors of fill name accoriding to previous color scheme
 
 ghg_sectors %>% select(-Entity, -Code) %>% 
     pivot_longer(-Year) %>% 
@@ -608,11 +807,10 @@ ghg_sectors %>% select(-Entity, -Code) %>%
     mutate(Total = rowSums(across(where(is.numeric)),na.rm = T)) %>% 
     mutate(Total = Total/1e9) %>%
     mutate_at("Total", round, digits = 2) %>% 
-    mutate(unit = "bln t of CO2") %>% 
     mutate(share = Total/sum(Total) * 100) %>% 
     mutate_at("share", round, digits = 2) %>% 
     mutate(percent = "%")%>% 
-    select(name, Total, unit, share, percent) %>%
+    select(name, Total, share, percent) %>%
     mutate(across("name", str_replace, "Land.use.change.and.forestry", "Land use change\nand forestry")) %>% 
     mutate(across("name", str_replace, "Manufacturing.and.construction", "Manufacturing and construction")) %>% 
     mutate(across("name", str_replace, "Electricity.and.heat", "Electricity and heat")) %>% 
@@ -620,14 +818,48 @@ ghg_sectors %>% select(-Entity, -Code) %>%
     mutate(across("name", str_replace, "Other.fuel.combustion", "Other fuel\ncombustion")) %>% 
     mutate(across("name", str_replace, "Aviation.and.shipping", "Aviation and shipping")) %>% 
     ggplot(aes(area = Total,
-               label = paste0(name,"\n",Total," ", unit,"\n", share, percent), fill = name)) +
+               label = paste0(name,"\n", share, percent,"\n(",Total,")\n"), fill = name)) +
     geom_treemap() +
     geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
-                      grow = T) + # ZASTANÓW SIĘ CZY TO ZMIENIĆ CZY NIE 
+                      grow = F) + # ZASTANÓW SIĘ CZY TO ZMIENIĆ CZY NIE 
+    scale_fill_manual(values=c(RColorBrewer::brewer.pal(10, "Paired"), 
+                               RColorBrewer::brewer.pal(12, "Paired")[12])) +
+    theme_general +
     labs(title = "Structure of total emissions by industry since 1990",
-         caption = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") +
-    theme(legend.position = "none") 
-    
+         caption = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources",
+         subtitle = "Total number of billiones of tonnes of CO2 emissioned in parenthesis") +
+    theme(legend.position = "none",
+          plot.title = element_text(color = '#4d4d4d',
+                                    size = 27,
+                                    face = 'bold',
+                                    family = 'Tahoma'),
+          plot.subtitle = element_text(color = '#999999',
+                                       size = 10,
+                                       face = 'plain',
+                                       family = 'Tahoma'),
+          plot.caption = element_text(color = '#999999',
+                                      size = 12,
+                                      face = 'plain',
+                                      family = 'Tahoma'),
+          axis.title = element_text(face = "plain",
+                                    color = "#999999",
+                                    family = 'Tahoma'),
+          axis.title.x = element_text(size = 13),
+          axis.title.y = element_text(size = 15),
+          axis.text = element_text(color = '#404040',
+                                   family = 'Tahoma'),
+          panel.background = element_rect(fill = "white", colour = "white", linewidth = 2),
+          axis.ticks = element_blank(), # Label points on axes
+          panel.grid.major = element_line(colour = "#999999", linetype = 'dashed'), # Set the main lines of the plot grid
+          axis.line.y = element_line(colour = "#999999", linetype = "solid", linewidth = 1), # Alter axes lines
+          axis.line.x = element_line(colour = "#999999", linetype = "solid", linewidth = 1), # Alter axes lines
+          panel.grid.minor.x = element_blank(),
+          panel.grid.minor.y = element_line(colour = "#cccccc", linetype = 'dashed'), # Add additional grid lines
+          panel.grid.major.x = element_blank(),
+          axis.text.y = element_text(family = 'Tahoma',face = "bold", size = 11),
+          axis.text.x = element_text(family = 'Tahoma',face = "bold", size = 11)
+)
+
 
 # Arctic ice sheet coverage ####
 
