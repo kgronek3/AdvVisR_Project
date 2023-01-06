@@ -19,6 +19,7 @@ extrafont::loadfonts()
 source("dataset_cleaning.R")
 options(scipen = 10)
 
+
 # Land and ocean temperature plots ####
 
 theme_general <- theme(
@@ -41,15 +42,26 @@ theme_general <- theme(
     axis.title.y = element_text(size = 15),
     axis.text = element_text(color = '#404040',
                              family = 'Tahoma'),
-    panel.background = element_rect(fill = "white", colour = "white", linewidth = 2),
+    panel.background = element_rect(fill = "white",
+                                    colour = "white",
+                                    linewidth = 2),
     axis.ticks = element_blank(),
-    panel.grid.major = element_line(colour = "#999999", linetype = 'dashed'),
-    axis.line.y = element_line(colour = "#999999", linetype = "solid", linewidth = 1),
-    axis.line.x = element_line(colour = "#999999", linetype = "solid", linewidth = 1),
+    panel.grid.major = element_line(colour = "#999999",
+                                    linetype = 'dashed'),
+    axis.line.y = element_line(colour = "#999999",
+                               linetype = "solid",
+                               linewidth = 1),
+    axis.line.x = element_line(colour = "#999999",
+                               linetype = "solid",
+                               linewidth = 1),
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
-    axis.text.y = element_text(family = 'Tahoma',face = "bold", size = 11),
-    axis.text.x = element_text(family = 'Tahoma',face = "bold", size = 11)
+    axis.text.y = element_text(family = 'Tahoma',
+                               face = "bold",
+                               size = 11),
+    axis.text.x = element_text(family = 'Tahoma',
+                               face = "bold",
+                               size = 11)
 )
 
 lims <- c(-5.5,5)
@@ -144,6 +156,7 @@ ggsave(file = "plots/1_plot_scatter.svg", plot = plot_1, width = 14, height = 12
 
 
 # Heat map of global land and ocean temperatures since 1880 ####
+
 levels <- c("Jan",
             "Feb",
             "Mar",
@@ -274,7 +287,7 @@ plot_2 <- grid.arrange(ocean_heat,land_heat,
 ggsave(file = "plots/2_plot_heat_map.svg", plot = plot_2, width = 14, height = 12)
 
 
-# World map/Europe map of TOTAL (since industrial revolution) emmisions by countries ####
+# World map of TOTAL (since industrial revolution) emmisions by country ####
 
 co2_codes_2 <- 
     co2_codes %>%
@@ -357,7 +370,7 @@ ggsave(file = "plots/3_plot_emissions_map.svg", plot = plot_3, width = 14, heigh
 
 
 # Barplot of (10) biggest polluter countries in 2021 ####
-# unit -> billions of tonnes of CO2
+# (units == billions of tonnes of CO2)
 
 countries_lvl <- c("China",
                    "United States", 
@@ -514,6 +527,7 @@ plot_4 <- ggplot(data = df, aes(x = factor(Country),
 
 ggsave(file = "plots/4_plot_countries.svg", plot = plot_4, width = 14, height = 12)
 
+
 # Barplot of biggest polluter celebrities in 2022 ####
 
 celeb_lvl <- c("Taylor Swift",
@@ -632,41 +646,8 @@ plot_5 <- celebs %>%
 
 ggsave(file = "plots/5_plot_celebrities.svg", plot = plot_5, width = 14, height = 12)
 
+
 # Decomposition of world emission over time by industry sectors ####
-
-sectors <- ghg_sectors %>% 
-    select(-Entity, -Code) %>% 
-    pivot_longer(!Year, names_to = "Industry", values_to = "Emissions") %>% 
-    mutate(Emissions = Emissions/1e9)
-
-sectors %>% tail()
-
-ggplot(sectors, aes(x = Year, y = Emissions, fill = Industry)) +
-    geom_area(color = "black", linetype = 1, size = .25, alpha = 0.8) +
-    guides(fill = guide_legend(title = "Sectors",
-                               byrow = T)) +
-    labs(title = "Table 1. Example title",
-         y = TeX(r'($CO_2$ emissions (billion of tonnes) )'),
-         caption  = "Source: Our World In Data\nhttps://ourworldindata.org/co2-dataset-sources") + 
-    scale_fill_discrete(labels = c("Agriculture",
-                                   "Aviation and shipping",
-                                   "Buildings",
-                                   "Electricity and heat",
-                                   "Fugitive emissions",
-                                   "Industry",
-                                   "Land use change and forestry",
-                                   "Manufacturing and construction",
-                                   "Other fuel combustion",
-                                   "Transport",
-                                   "Waste")) +
-    scale_x_continuous(expand = c(0,0), limits = c(1990,2019),
-                       breaks = seq(1990, 2020, by = 2)) +
-    scale_y_continuous(expand = c(0,0)) +
-    theme(plot.title = element_text(),
-          legend.spacing.y = unit(0.2, "cm"))
-    
-
-# percentage structure over time
 
 sectors2 <- ghg_sectors %>% 
     select(-Entity, -Code) %>% 
@@ -796,6 +777,7 @@ plot_6 <- ggplot(sectors2, aes(x = Year, y = percentage, fill = Industry)) +
           )
 
 ggsave(file = "plots/6_plot_decomposition_sectors.svg", plot = plot_6, width = 14, height = 12)
+
 
 # Total Decomposition with treemapify ####
 
